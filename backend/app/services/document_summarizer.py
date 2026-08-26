@@ -1,0 +1,109 @@
+from __future__ import annotations
+
+import logging
+from pathlib import Path
+
+from openai import AsyncOpenAI
+
+from .config import config
+
+
+logger = logging.getLogger(__name__)
+
+
+class DocumentSummarizer:
+    def __init__(self):
+        self.client = AsyncOpenAI(api_key=config.openai_api_key)
+
+    async def generate_description(self, file_content: bytes, filename: str) -> str:
+        logger.info(f"Generating description for document: {filename}")
+
+        try:
+            try:
+                text_content = file_content.decode("utf-8")
+            except UnicodeDecodeError:
+                logger.warning(f"Failed to decode {filename} as UTF-8, using fallback description")
+
+                return self._generate_fallback_description(filename)
+
+            max_content_size = 4000
+            if len(text_content) > max_content_size:
+                logger.debug(f"Truncating content for {filename}: {len(text_content)} -> {max_content_size} chars")
+                text_content = text_content[:max_content_size] + "..."
+
+            logger.info(f"Calling OpenAI API to generate description for {filename}")
+            response = await self.client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": """You are a document analyzer. Create a concise, informative 1-2 line description of the document content that would help students understand what this study material contains.
+
+Focus on:
+- Main topic or subject area
+- Type of content (notes, textbook, slides, research paper, etc.)
+- Key concepts or themes
+
+Keep it under 100 characters and make it useful for study organization.""",
+                    },
+                    {
+                        "role": "user",
+                        "content": f"Analyze this document and provide a brief description:\n\nFilename: {filename}\n\nContent:\n{text_content}",
+                    },
+                ],
+                max_tokens=150,
+                temperature=0.3,
+            )
+
+            description = response.choices[0].message.content or ""
+
+            description = description.strip().strip('"').strip("'")
+            if len(description) > 200:
+                description = description[:197] + "..."
+
+            logger.debug(f"Generated description for {filename}: {description}")
+            return description or self._generate_fallback_description(filename)
+
+        except Exception as e:
+            logger.exception(f"Error generating description for {filename}: {e}")
+            return self._generate_fallback_description(filename)
+
+    @staticmethod
+    def _generate_fallback_description(filename: str) -> str:
+        logger.debug(f"Generating fallback description for {filename}")
+
+        file_path = Path(filename)
+        extension = file_path.suffix.lower()
+        name_part = file_path.stem
+
+        type_descriptions = {
+            ".pdf": "PDF document",
+            ".txt": "Text document",
+            ".md": "Markdown document",
+            ".html": "Web document",
+            ".docx": "Word document",
+            ".json": "JSON data file",
+        }
+
+        type_desc = type_descriptions.get(extension, "Document")
+
+        if any(keyword in name_part.lower() for keyword in ["notes", "note"]):
+            description = f"Study notes - {type_desc}"
+        elif any(keyword in name_part.lower() for keyword in ["lecture", "slides"]):
+            description = f"Lecture material - {type_desc}"
+        elif any(keyword in name_part.lower() for keyword in ["textbook", "book", "chapter"]):
+            description = f"Textbook content - {type_desc}"
+        elif any(keyword in name_part.lower() for keyword in ["assignment", "homework", "hw"]):
+            description = f"Assignment material - {type_desc}"
+        elif any(keyword in name_part.lower() for keyword in ["exam", "test", "quiz"]):
+            description = f"Exam preparation - {type_desc}"
+        else:
+            description = f"{type_desc} for study reference"
+
+        logger.debug(f"Generated fallback description for {filename}: {description}")
+        return description
+
+
+document_summarizer = DocumentSummarizer()
+
+__all__ = ["DocumentSummarizer", "document_summarizer"]

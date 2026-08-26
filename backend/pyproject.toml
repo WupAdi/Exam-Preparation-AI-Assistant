@@ -1,0 +1,29 @@
+[project]
+name = "chatkit-backend"
+version = "0.1.0"
+description = "FastAPI backend service for ChatKit boilerplate"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "httpx",
+    "uvicorn[standard]",
+    "openai",
+    "openai-chatkit",
+    "python-dotenv",
+    "pre-commit",
+    "pytest",
+    "pytest-asyncio",
+    "logfire",
+    "logfire[fastapi]",
+    "prettytable",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff",
+    "mypy",
+]
+
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
