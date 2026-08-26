@@ -1,78 +1,39 @@
-# 🎓 AI Exam Preparation Assistant
+# Exam Preparation Agent Workshop
 
-An intelligent study assistant powered by **OpenAI Agents**, **FastAPI**, and **React**. Upload study materials, generate practice questions, create flashcards, and interact with your personal AI study tutor.
+## What's Inside
+- FastAPI service that is backed by OpenAI Agents.
+- ChatKit Web Component wrapped in React with a document panel.
+- Vector-store tooling for ingesting documents and exposing REST endpoints for previews, uploads.
+- **Health Check API**: `GET /health` endpoint for monitoring backend uptime.
+- **Live Status Indicator**: Pulse status badge on the frontend header reflecting real-time API connectivity.
 
----
+## Prerequisites
+- Python 3.11+
+- Node.js 22+ (Use `nvm`)
+- [uv](https://docs.astral.sh/uv/getting-started/installation/)
+- OpenAI API key as `OPENAI_API_KEY` in `.env`
 
-## ✨ Features
+## Steps to Run:
+### Setup Notion
+1. https://github.com/makenotion/notion-mcp-server/blob/main/README.md#1-setting-up-integration-in-notion
+2. https://github.com/makenotion/notion-mcp-server/blob/main/README.md#2-connecting-content-to-integration
+3. Copy `Internal Integration Secret` and put in your `.env`
 
-- 🧠 **AI-Powered Study Agent**: Interacts with your documents using OpenAI Agents & ChatKit.
-- 📚 **Vector Store Knowledge Retrieval**: Automatically indexes and searches through uploaded study documents.
-- 🟢 **Live API Monitoring & Health Check**: Includes a custom `GET /health` endpoint and a live pulsing status badge on the frontend header to ensure real-time backend connection status.
-- 🎨 **Modern React UI**: Sleek, accessible interface with document previews and ChatKit integration.
+### Setup Logfire
+1. https://logfire-us.pydantic.dev/login
+2. Signin using preferred method
+3. Click "Lets go" to use default `starter-project`
+4. Copy `Write token` and put in your `.env`
 
----
+### Start the FastAPI backend
+1. Setup environment
+   - Copy the template environment file into your own `.env` file: `cp .env.template .env`
+2. Create or reuse a vector store:
+   - Visit [OpenAI Vector Stores](https://platform.openai.com/storage/vector_stores) and create a vector store, or, Use existing vector store
+   - Copy the Vector Store ID (e.g. `vs_abc123`) and set in your `.env` file, alongside your OpenAI API Key
+3. Use `nvm` OR ensure Node V22+: `nvm use`
+4. Install dependencies and launch the API: `npm run backend`
 
-## 🏗️ Architecture Overview
-
-- **Backend**: Python 3.11+, FastAPI, OpenAI Agents SDK, Logfire, Uvicorn.
-- **Frontend**: React 18, Vite, Tailwind CSS, ChatKit Web Component.
-
----
-
-## 🚀 Quick Start Guide
-
-### Prerequisites
-- **Python**: 3.11+
-- **Node.js**: 20+ / 22+
-
----
-
-### 1. Environment Setup
-
-Copy `.env.template` to `.env`:
-
-```bash
-cp .env.template .env
-```
-
-Ensure `.env` contains your configuration:
-```env
-OPENAI_API_KEY=your_openai_api_key
-EXAM_PREP_VECTOR_STORE_ID=vs_your_vector_store_id
-NOTION_TOKEN=your_notion_token
-```
-
----
-
-### 2. Start the FastAPI Backend
-
-From the repository root:
-
-```bash
-cd backend
-python -m pip install -e .
-python -m uvicorn app.main:app --reload
-```
-
-> **Health Check Verification**: Open [http://127.0.0.1:8000/health](http://127.0.0.1:8000/health) in your browser to verify API status (`{"status": "ok"}`).
-
----
-
-### 3. Start the React Frontend
-
-In a new terminal:
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Open [http://localhost:5172](http://localhost:5172) in your browser. Look for the **`🟢 API Connected`** badge in the header!
-
----
-
-## 📄 License
-
-This project is open source and licensed under the [GNU General Public License v3.0](LICENSE).
+### Start the React Frontend
+1. Use `nvm` OR ensure Node V22+: `nvm use`
+2. Launch frontend server: `npm run frontend`
